@@ -1,0 +1,369 @@
+<title>안심 드라이브 시연</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Do+Hyeon&display=swap">
+<style>
+/* Layout: 차량 중앙 디스플레이(가로형) 옆에 자녀 폰을 나란히, 좁은 화면에서는 위아래로 쌓음 */
+:root {
+  --bg: #0d1217;
+  --panel: #18212a;
+  --panel-hi: #23303b;
+  --ink: #eef3f6;
+  --muted: #8fa0ad;
+  --safe: #3ddc97;
+  --warn: #ffb020;
+  --danger: #ff5a5f;
+  --hwy: #5b95ff;
+  --phone: #f3f5f7;
+  --phone-ink: #12171c;
+  --phone-muted: #6d7884;
+  --phone-card: #ffffff;
+  --phone-urgent: #ffe2e3;
+  --phone-red: #c62828;
+  --display: "Do Hyeon", "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px;
+  box-sizing: border-box;
+}
+* { box-sizing: border-box; }
+button { font: inherit; cursor: pointer; border: 0; color: inherit; }
+button:focus-visible { outline: 3px solid var(--safe); outline-offset: 2px; }
+
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.bar .name { font-family: var(--display); font-size: 1.4rem; color: var(--safe); margin-right: auto; }
+.chip { background: var(--panel); border-radius: 10px; padding: 8px 12px; font-size: .9rem; }
+.chip.on { background: var(--safe); color: var(--bg); font-weight: 700; }
+
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; max-width: 1280px; }
+@media (max-width: 860px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+
+.car {
+  position: relative; background: #000; border-radius: 28px; padding: 22px;
+  aspect-ratio: 16 / 9; max-width: 100%; min-height: 420px; overflow: hidden;
+  border: 1px solid var(--panel-hi);
+}
+@media (max-width: 860px) { .car { aspect-ratio: auto; min-height: 520px; } }
+.screen { position: absolute; inset: 22px; display: flex; flex-direction: column; gap: 14px; }
+.eyebrow { color: var(--safe); font-weight: 700; letter-spacing: .04em; font-size: .95rem; }
+h1, h2 { font-family: var(--display); font-weight: 400; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+h2 { font-size: clamp(1.4rem, 3vw, 2rem); }
+.muted { color: var(--muted); }
+
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 600px) { .grid3, .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.dest { background: var(--panel); border-radius: 22px; padding: 20px; text-align: left; display: grid; gap: 4px; }
+.dest:hover { background: var(--panel-hi); }
+.dest .ico { font-size: 2.2rem; }
+.dest b { font-size: 1.4rem; }
+
+.route { background: var(--panel); border-radius: 22px; padding: 18px; display: grid; gap: 6px; text-align: left; border: 3px solid transparent; }
+.route.easy { border-color: var(--safe); }
+.route .t { display: flex; gap: 8px; align-items: center; font-family: var(--display); font-size: 1.8rem; }
+.route.easy .t { color: var(--safe); }
+.tag { font-family: var(--body); font-size: .8rem; font-weight: 700; background: var(--safe); color: var(--bg); padding: 2px 8px; border-radius: 6px; }
+.route .num { font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+.route .hw { font-weight: 700; font-size: 1.1rem; }
+.route canvas { width: 100%; height: 80px; }
+.go { margin-top: 6px; padding: 12px; border-radius: 14px; background: var(--panel-hi); font-weight: 700; font-size: 1.1rem; }
+.route.easy .go { background: var(--safe); color: var(--bg); }
+.toggle { display: flex; gap: 12px; align-items: center; background: var(--panel); border-radius: 14px; padding: 12px 16px; align-self: flex-start; font-size: 1.05rem; }
+.dot { width: 22px; height: 22px; border-radius: 50%; background: var(--panel-hi); flex: none; }
+.toggle.on .dot { background: var(--safe); }
+.back { align-self: flex-start; background: none; color: var(--muted); padding: 0; }
+
+.drivehead { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.drivehead > div { margin-right: auto; }
+.pill { border-radius: 99px; padding: 6px 14px; font-weight: 700; font-size: .95rem; }
+.pill.safe { color: var(--safe); background: color-mix(in srgb, var(--safe) 15%, transparent); }
+.pill.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, transparent); }
+.map { position: relative; flex: 1; background: var(--panel); border-radius: 22px; min-height: 160px; overflow: hidden; }
+.map canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.speed { position: absolute; left: 18px; bottom: 14px; font-variant-numeric: tabular-nums; }
+.speed b { font-family: var(--display); font-size: 3.4rem; font-weight: 400; display: block; line-height: 1; }
+.eta { position: absolute; right: 18px; top: 14px; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+.demo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .9rem; }
+.demo button { background: none; border: 1px solid currentColor; border-radius: 10px; padding: 7px 12px; }
+.demo .w { color: var(--warn); } .demo .s { color: var(--safe); } .demo .d { color: var(--danger); }
+
+.overlay { position: absolute; inset: 0; background: color-mix(in srgb, var(--bg) 96%, transparent); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; padding: 24px; }
+.overlay h1 { font-size: clamp(2.4rem, 6vw, 4rem); }
+.overlay p { font-size: clamp(1.1rem, 2.4vw, 1.6rem); margin: 0; line-height: 1.5; max-width: 30ch; }
+.big { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+.big button { min-width: 200px; padding: 18px 24px; border-radius: 18px; font-size: 1.5rem; font-weight: 700; color: var(--bg); }
+.count { font-family: var(--display); font-size: 2.2rem; color: var(--warn); font-variant-numeric: tabular-nums; }
+
+.caption { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: rgba(0,0,0,.78); color: #fff; padding: 10px 18px; border-radius: 12px; font-size: 1.05rem; max-width: 90%; text-align: center; z-index: 5; }
+
+.phone { background: var(--phone); color: var(--phone-ink); border: 7px solid #262b31; border-radius: 34px; padding: 16px; min-height: 420px; display: flex; flex-direction: column; gap: 10px; }
+.phone .who { color: var(--phone-muted); font-size: .85rem; }
+.phone h3 { margin: 0; font-size: 1.15rem; }
+.msg { background: var(--phone-card); border-radius: 14px; padding: 12px; display: grid; gap: 3px; animation: pop .35s ease-out; }
+.msg.urgent { background: var(--phone-urgent); }
+.msg small { color: var(--phone-muted); }
+.msg b { font-size: 1rem; }
+.msg.urgent b { color: var(--phone-red); }
+.msg span { font-size: .9rem; color: #3a4450; }
+.msg .call { margin-top: 6px; background: var(--phone-red); color: #fff; border-radius: 10px; padding: 8px; font-weight: 700; text-align: center; }
+.empty { color: var(--phone-muted); }
+@keyframes pop { from { transform: translateY(-6px); opacity: .4; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .msg { animation: none; } }
+</style>
+
+<div class="bar">
+  <span class="name">안심 드라이브 · 시연</span>
+  <button class="chip on" id="auto">▶ 자동 시연 (약 80초)</button>
+  <button class="chip" id="reset">처음으로</button>
+  <button class="chip on" id="cap">자막 켜짐</button>
+  <button class="chip on" id="voice">음성 켜짐</button>
+</div>
+
+<div class="stage">
+  <div class="car" id="car"></div>
+  <div class="phone">
+    <span class="who">지은(자녀)의 폰</span>
+    <h3>안심 드라이브 알림</h3>
+    <div id="inbox"><p class="empty">아직 알림이 없어요</p></div>
+  </div>
+</div>
+
+<script>
+const PARENT = "어머니", CHILD = "지은";
+const DESTS = [
+  { name: "서울대학교병원", addr: "종로구 대학로 101", ico: "🏥", base: 24 },
+  { name: "동네 마트", addr: "성북구 보문로 12", ico: "🛒", base: 9 },
+  { name: "지은이네 집", addr: "마포구 월드컵로 34", ico: "🏠", base: 31 },
+];
+const routesFor = d => [
+  { type: "easy", title: "쉬운 길", min: d.base + 7, km: d.base * .55, hw: 0, sum: "고속도로 없음 · 시내 도로 · 회전 적음" },
+  { type: "fast", title: "빠른 길", min: d.base, km: d.base * .75, hw: Math.round(d.base * .45), sum: "도시고속도로 포함 · 합류 구간 3곳" },
+];
+const PTS = {
+  easy: [[0,.85],[.2,.85],[.2,.55],[.5,.55],[.5,.3],[.8,.3],[.8,.12],[.95,.12]],
+  fast: [[0,.85],[.15,.85],[.3,.65],[.75,.2],[.85,.2],[.95,.12]],
+};
+
+// 앱의 SafetyMonitor.kt 와 같은 규칙
+class Safety {
+  constructor(timeoutMs) { this.timeout = timeoutMs; this.reset(); }
+  reset() { this.samples = []; this.state = { k: "normal" }; }
+  speed(now, v) {
+    this.samples.push([now, v]);
+    this.samples = this.samples.filter(s => now - s[0] <= 3000);
+    const st = this.state;
+    if (st.k === "normal" && v <= 5 && this.samples.some(([t, s]) => s >= 40 && now > t && (s - v) / ((now - t) / 1000) >= 25))
+      this.state = { k: "brake", at: now };
+    else if (st.k === "brake" && v > 5) this.state = { k: "normal" };
+    this.tick(now);
+  }
+  tick(now) {
+    const st = this.state;
+    if (st.k === "brake" && now - st.at >= 5000) this.state = { k: "asking", since: now };
+    else if (st.k === "asking" && now - st.since >= this.timeout) this.state = { k: "alert", why: "noresp" };
+  }
+  left(now) { return this.state.k === "asking" ? Math.max(0, Math.ceil((this.timeout - (now - this.state.since)) / 1000)) : 0; }
+}
+
+const S = {
+  screen: "home", dest: null, route: null, share: true, progress: 0,
+  speed: 0, target: 0, rate: 0, hazard: false, inbox: [],
+  safety: new Safety(30000), captions: true, voice: true, auto: false,
+};
+const car = document.getElementById("car");
+const hhmm = (d = new Date()) => d.toTimeString().slice(0, 5);
+let caption = "";
+
+function say(t) {
+  if (!S.voice || !("speechSynthesis" in window)) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = "ko-KR"; speechSynthesis.speak(u); } catch (e) {}
+}
+function send(title, body, urgent = false) {
+  S.inbox.unshift({ t: hhmm(), title, body, urgent });
+  renderInbox();
+}
+function renderInbox() {
+  const el = document.getElementById("inbox");
+  el.innerHTML = S.inbox.length ? S.inbox.map(m => `
+    <div class="msg ${m.urgent ? "urgent" : ""}"><small>${m.t}</small><b>${m.title}</b><span>${m.body}</span>
+    ${m.urgent ? `<div class="call">📞 ${PARENT}께 전화</div>` : ""}</div>`).join("") : '<p class="empty">아직 알림이 없어요</p>';
+  el.style.display = "grid"; el.style.gap = "10px";
+}
+
+// ── 차량 시뮬레이션 ──
+function drive() { S.hazard = false; S.target = 55; S.rate = 12; S.cruise = true; }
+function hazardStop() { S.hazard = true; S.cruise = false; S.target = 0; S.rate = 6; }
+function hardBrake() { S.cruise = false; S.target = 0; S.rate = 40; }
+function airbag() { S.cruise = false; S.target = 0; S.rate = 60; setTimeout(() => alertChild("airbag"), 300); }
+function park() { S.cruise = false; S.target = 0; S.speed = 0; S.hazard = false; }
+
+function alertChild(why) {
+  if (S.safety.state.k === "alert" && S.alerted) return;
+  S.safety.state = { k: "alert", why }; S.alerted = true; park();
+  const txt = { airbag: "에어백이 터졌어요", noresp: "급정지 후 응답이 없어요", help: `${PARENT}가 도움을 요청하셨어요` }[why];
+  send(`🚨 ${PARENT} 차량 사고 의심`, `${txt}. 현재 위치: 성북구 보문로 인근. 지금 바로 전화해 보세요.`, true);
+  say(`${CHILD}님에게 알렸어요. 곧 연락이 올 거예요.`);
+  render();
+}
+
+function start(route) {
+  S.route = route; S.screen = "drive"; S.progress = 0; S.alerted = false; S.safety.reset(); S.inbox = []; renderInbox();
+  if (S.share) {
+    const eta = hhmm(new Date(Date.now() + route.min * 60000));
+    send(`${PARENT}가 출발하셨어요`, `${S.dest.ico} ${S.dest.name}(으)로 가는 중 · ${route.title}(고속도로 ${route.hw}km) · 도착 예정 ${eta}`);
+  }
+  drive(); render();
+}
+
+let last = performance.now(), lastState = "normal";
+function loop(t) {
+  const dt = Math.min(.25, (t - last) / 1000); last = t;
+  if (S.screen === "drive" && S.safety.state.k !== "alert") {
+    const step = S.rate * dt;
+    S.speed = S.speed < S.target ? Math.min(S.target, S.speed + step) : Math.max(S.target, S.speed - step);
+    if (S.cruise && S.speed >= 48) S.speed = Math.max(48, Math.min(60, S.speed + (Math.random() * 4 - 2) * dt * 2));
+    S.safety.speed(Date.now(), S.speed);
+    S.progress = Math.min(1, S.progress + S.speed / 60 / 70 * dt);
+    if (S.progress >= 1 && S.safety.state.k === "normal") arrive();
+    const k = S.safety.state.k;
+    if (k !== lastState) {
+      if (k === "asking") say("괜찮으세요? 괜찮으시면 괜찮아요 버튼을 눌러 주세요.");
+      if (k === "alert" && !S.alerted) alertChild("noresp");
+      lastState = k; render();
+    }
+    updateDrive();
+  }
+  requestAnimationFrame(loop);
+}
+
+function arrive() {
+  park(); S.screen = "arrived";
+  if (S.share) send(`${PARENT}가 도착하셨어요`, `${S.dest.ico} ${S.dest.name}에 안전하게 도착`);
+  render();
+}
+
+// ── 그리기 ──
+function drawRoute(cv, type, progress) {
+  const r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  cv.width = r.width * dpr; cv.height = r.height * dpr;
+  const c = cv.getContext("2d"); c.scale(dpr, dpr);
+  const pad = 18, W = r.width - pad * 2, H = r.height - pad * 2;
+  const o = PTS[type].map(([x, y]) => [pad + x * W, pad + y * H]);
+  c.lineCap = "round"; c.lineJoin = "round";
+  c.strokeStyle = "#3ddc97"; c.lineWidth = 6; c.beginPath(); o.forEach((p, i) => i ? c.lineTo(...p) : c.moveTo(...p)); c.stroke();
+  if (type === "fast") { c.strokeStyle = "#5b95ff"; c.lineWidth = 9; c.beginPath(); c.moveTo(...o[2]); c.lineTo(...o[3]); c.stroke(); }
+  c.fillStyle = "#ff5a5f"; c.beginPath(); c.arc(...o[o.length - 1], 8, 0, 7); c.fill();
+  if (progress >= 0) {
+    const segs = o.slice(1).map((b, i) => [o[i], b, Math.hypot(b[0] - o[i][0], b[1] - o[i][1])]);
+    let rem = segs.reduce((a, s) => a + s[2], 0) * progress, p = o[o.length - 1];
+    for (const [a, b, len] of segs) { if (rem <= len) { p = [a[0] + (b[0] - a[0]) * rem / len, a[1] + (b[1] - a[1]) * rem / len]; break; } rem -= len; }
+    c.fillStyle = "#eef3f6"; c.beginPath(); c.arc(...p, 10, 0, 7); c.fill();
+  }
+}
+
+function overlay() {
+  const st = S.safety.state;
+  if (st.k === "asking") return `<div class="overlay">
+    <h1 style="color:var(--warn)">괜찮으세요?</h1>
+    <p>갑자기 멈춘 뒤 움직임이 없어요.<br>답이 없으면 ${CHILD}에게 알릴게요.</p>
+    <div class="count" id="count">${S.safety.left(Date.now())}초</div>
+    <div class="big"><button style="background:var(--safe)" data-a="ok">괜찮아요</button><button style="background:var(--danger)" data-a="help">도와주세요</button></div></div>`;
+  if (st.k === "alert") {
+    const why = { airbag: "에어백이 터진 것을 감지했어요.", noresp: "응답이 없어서 걱정돼요.", help: "도움을 요청하셨어요." }[st.why];
+    return `<div class="overlay"><h1 style="color:var(--danger)">${CHILD}에게 알렸어요</h1>
+      <p>${why}<br>현재 위치와 함께 알림을 보냈어요. 곧 연락이 올 거예요.</p>
+      <div class="big"><button style="background:var(--danger)">📞 119 전화</button><button style="background:var(--panel-hi);color:var(--ink)" data-a="home">처음으로</button></div></div>`;
+  }
+  return "";
+}
+
+function render() {
+  let h = "";
+  if (S.screen === "home") {
+    h = `<div class="screen"><span class="eyebrow">안심 드라이브</span><h1>어디로 가실까요?</h1>
+      <div class="grid3">${DESTS.map((d, i) => `<button class="dest" data-d="${i}"><span class="ico">${d.ico}</span><b>${d.name}</b><span class="muted">${d.addr}</span></button>`).join("")}</div></div>`;
+  } else if (S.screen === "routes") {
+    const rs = routesFor(S.dest);
+    h = `<div class="screen"><button class="back" data-a="home">← 처음으로</button><h2>${S.dest.ico} ${S.dest.name}</h2>
+      <div class="grid2">${rs.map((r, i) => `<button class="route ${r.type}" data-r="${i}">
+        <span class="t">${r.title}${r.type === "easy" ? '<span class="tag">추천</span>' : ""}</span>
+        <span class="num">${r.min}분 · ${r.km.toFixed(1)}km</span>
+        <canvas data-type="${r.type}"></canvas>
+        <span class="hw" style="color:${r.hw ? "var(--hwy)" : "var(--safe)"}">고속도로 ${r.hw}km</span>
+        <span class="muted">${r.sum}</span><span class="go">이 길로 출발</span></button>`).join("")}</div>
+      <button class="toggle ${S.share ? "on" : ""}" data-a="share"><span class="dot"></span>${CHILD}에게 가는 곳 알려주기 ${S.share ? "켜짐" : "꺼짐"}</button></div>`;
+  } else if (S.screen === "drive") {
+    const r = S.route;
+    h = `<div class="screen"><div class="drivehead"><div><h2>${S.dest.ico} ${S.dest.name}</h2><span style="color:var(--safe)">${r.title} · 고속도로 ${r.hw}km</span></div>
+      ${S.share ? `<span class="pill safe">📍 ${CHILD}에게 공유 중</span>` : ""}<span class="pill warn" id="hz" ${S.hazard ? "" : "hidden"}>⚠ 비상등</span></div>
+      <div class="map"><canvas id="map"></canvas><div class="speed"><b id="spd">0</b><span class="muted">km/h</span></div><div class="eta" id="eta"></div></div>
+      <div class="demo"><span class="muted">시연용</span><button class="w" data-a="hazard">비상등 정차</button><button class="s" data-a="drive">다시 출발</button><button class="d" data-a="brake">급정지</button><button class="d" data-a="airbag">에어백</button></div></div>`;
+  } else if (S.screen === "arrived") {
+    h = `<div class="overlay"><h1 style="color:var(--safe)">도착했어요</h1><p>${S.dest.name}에 안전하게 도착했어요.${S.share ? `<br>${CHILD}에게도 알렸어요.` : ""}</p>
+      <div class="big"><button style="background:var(--safe)" data-a="home">처음으로</button></div></div>`;
+  }
+  car.innerHTML = h + (S.screen === "drive" ? overlay() : "") + (S.captions && caption ? `<div class="caption">${caption}</div>` : "");
+  car.querySelectorAll("canvas[data-type]").forEach(cv => drawRoute(cv, cv.dataset.type, -1));
+  updateDrive();
+}
+function updateDrive() {
+  if (S.screen !== "drive") return;
+  const m = document.getElementById("map"); if (m) drawRoute(m, S.route.type, S.progress);
+  const spd = document.getElementById("spd"); if (spd) spd.textContent = Math.round(S.speed);
+  const eta = document.getElementById("eta"); if (eta) eta.textContent = `남은 시간 ${Math.ceil(S.route.min * (1 - S.progress))}분`;
+  const hz = document.getElementById("hz"); if (hz) hz.hidden = !S.hazard;
+  const cnt = document.getElementById("count"); if (cnt) cnt.textContent = S.safety.left(Date.now()) + "초";
+}
+
+function goHome() { park(); S.safety.reset(); lastState = "normal"; S.screen = "home"; S.dest = null; render(); }
+
+car.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.d) { S.dest = DESTS[+b.dataset.d]; S.screen = "routes"; render(); return; }
+  if (b.dataset.r) { start(routesFor(S.dest)[+b.dataset.r]); return; }
+  const a = b.dataset.a;
+  if (a === "home") goHome();
+  if (a === "share") { S.share = !S.share; render(); }
+  if (a === "hazard") hazardStop();
+  if (a === "drive") drive();
+  if (a === "brake") hardBrake();
+  if (a === "airbag") airbag();
+  if (a === "ok") { S.safety.state = { k: "normal" }; lastState = "normal"; drive(); render(); }
+  if (a === "help") alertChild("help");
+});
+
+// ── 자동 시연: 영상 녹화용 ──
+const wait = ms => new Promise(r => setTimeout(r, ms));
+let runId = 0;
+function cap(t) { caption = t; render(); }
+async function autoDemo() {
+  const id = ++runId, alive = () => id === runId;
+  S.inbox = []; renderInbox(); S.safety = new Safety(10000); goHome();
+  cap("부모님이 목적지를 고릅니다"); await wait(3500); if (!alive()) return;
+  S.dest = DESTS[0]; S.screen = "routes"; cap("고속도로 없는 '쉬운 길'을 먼저 추천합니다"); await wait(6000); if (!alive()) return;
+  cap("자녀에게 목적지 공유는 기본으로 켜져 있어요"); await wait(4000); if (!alive()) return;
+  caption = "출발하면 자녀 폰에 바로 알림이 갑니다"; start(routesFor(S.dest)[0]); await wait(9000); if (!alive()) return;
+  cap("장 보러 비상등 켜고 천천히 서는 경우"); hazardStop(); await wait(12000); if (!alive()) return;
+  cap("천천히 선 정차는 알림을 보내지 않아요"); await wait(4000); if (!alive()) return;
+  cap("다시 출발"); drive(); await wait(7000); if (!alive()) return;
+  cap("고속에서 급정지 후 움직임이 없으면…"); hardBrake(); await wait(7000); if (!alive()) return;
+  cap("음성으로 '괜찮으세요?'라고 묻고, 답이 없으면 자녀에게 알립니다"); await wait(12000); if (!alive()) return;
+  cap("에어백이 터지면 묻지 않고 바로 알립니다 (실차: Pleos 에어백 신호)"); await wait(6000); if (!alive()) return;
+  caption = ""; S.safety = new Safety(30000); render();
+}
+
+document.getElementById("auto").onclick = () => { autoDemo(); };
+document.getElementById("reset").onclick = () => { runId++; caption = ""; S.safety = new Safety(30000); S.inbox = []; renderInbox(); goHome(); };
+document.getElementById("cap").onclick = e => { S.captions = !S.captions; e.target.classList.toggle("on", S.captions); e.target.textContent = S.captions ? "자막 켜짐" : "자막 꺼짐"; render(); };
+document.getElementById("voice").onclick = e => { S.voice = !S.voice; e.target.classList.toggle("on", S.voice); e.target.textContent = S.voice ? "음성 켜짐" : "음성 꺼짐"; };
+addEventListener("resize", () => render());
+
+render(); renderInbox(); requestAnimationFrame(loop);
+</script>
